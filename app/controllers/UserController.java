@@ -2,8 +2,10 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.User;
 import play.libs.F;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Results;
@@ -25,46 +27,28 @@ public class UserController extends Controller {
                     "Expecting Json data", false)));
         } else{
             User user = userManager.addUser(jsonNode);
-            try{
-                jsonNode = mapper.readTree("{\"" + user.getUserId() + "\": \"" + user.getUserName().replace("\"","") + "\"}");
                 if(user.getUserName()=="Not Created"){
                     return F.Promise.<Result>pure(Results.notFound(Util.createResponse("Couldn't Be Created",false)));
                 }
-            } catch (IOException e){
-                e.printStackTrace();
-                return F.Promise.<Result>pure(Results.internalServerError(Util.createResponse("Internal Server Error", false)));
-            }
-            return F.Promise.<Result>pure(Results.created(jsonNode.toString()));
+            return F.Promise.<Result>pure(Results.created(Util.createResp(user,true)));
         }
     }
 
     public  F.Promise<Result> allUsers(){
         List<User> users = userManager.allUsers();
-        List<JsonNode> jsonNodes = new ArrayList<>();
-        try {
+        if(users.size()== 0){
+            return F.Promise.<Result>pure(Results.notFound(Util.createResponse("No Users Present",true)));
+        }
+        List<ObjectNode> objectNodes = new ArrayList<>();
             for (User user : users) {
-                String newString = "{\"" + user.getUserId() + "\": \"" + user.getUserName() + "\"}";
-                JsonNode newNode = null;
-                newNode = mapper.readTree(newString);
-                jsonNodes.add(newNode);
+                objectNodes.add(Util.createResp(user, true));
             }
-            } catch(IOException e){
-                e.printStackTrace();
-                return F.Promise.<Result>pure(Results.internalServerError(Util.createResponse("Internal Server Error", false)));
-            }
-        return F.Promise.<Result>pure(Results.created(jsonNodes.toString()));
+        return F.Promise.<Result>pure(Results.created(objectNodes.toString()));
     }
 
     public F.Promise<Result> getUser(String id){
         User user = userManager.getUser(id);
-        JsonNode jsonNode =null;
-        try{
-            jsonNode = mapper.readTree("{\"" + user.getUserId() + "\": \"" + user.getUserName() + "\"}");
-        } catch (IOException e){
-            e.printStackTrace();
-            return F.Promise.<Result>pure(Results.internalServerError(Util.createResponse("Internal Server Error", false)));
-        }
-        return F.Promise.<Result>pure(Results.created(jsonNode.toString()));
+        return F.Promise.<Result>pure(Results.created(Util.createResp(user,true)));
 
     }
 

@@ -23,8 +23,8 @@ public class UserManager {
         User userTest = null;
         UUID uuid = Generators.randomBasedGenerator().generate();
         if(user.has("userName")){
-            userTest = new User( user.get("userName").toString(),uuid.toString());
-            String query ="INSERT INTO user_data.user (userid,username) VALUES ('"+userTest.getUserId()+"','"+userTest.getUserName()+"')";
+            userTest = new User( user.get("userName").toString().replace("\"",""),uuid.toString());
+            String query ="INSERT INTO user_data.user (userid,username) VALUES ('"+userTest.getUserId()+"','"+userTest.getUserName().replace("\"","")+"')";
             try {
                 clusterBuilder();
                 Session session = cluster.connect();
@@ -47,7 +47,6 @@ public class UserManager {
             if (! resultSet.isExhausted()) {
                 List<Row> rows = resultSet.all();
                 for (Row row :rows) {
-                    System.out.println(row);
                     users.add(new User(row.getString("userid"),row.getString("username").replace("\"","")));
                 }
             }
@@ -116,7 +115,6 @@ public class UserManager {
                 clusterBuilder();
                 Session session = cluster.connect();
                 ResultSet resultSet = session.execute(query);
-                System.out.println(resultSet);
                 Row row = resultSet.one();
                 response= row.getBool("[applied]");
             }catch (Exception e){
