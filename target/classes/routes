@@ -1,0 +1,13 @@
+
+
+GET     /                         @controllers.HomeController.index()
+POST    /add-user                 @controllers.UserController.addUser()
+GET     /all-users                @controllers.UserController.allUsers()
+GET     /fetch-user/:id           @controllers.UserController.getUser(id)
+DELETE  /delete-user/:id          @controllers.UserController.deleteUser(id)
+PUT     /update-user              @controllers.UserController.updateUser()
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
+
